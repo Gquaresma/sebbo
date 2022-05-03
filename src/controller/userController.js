@@ -1,7 +1,7 @@
 const prisma = require("../config/db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { jwt_key } = require("../env");
+const { jwt_key } = require("../../env");
 const saltRounds = 10;
 
 module.exports = {

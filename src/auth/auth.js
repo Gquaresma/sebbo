@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const { jwt_key } = require("../env");
+const { jwt_key } = require("../../env");
 const prisma = require("../config/db");
 
 module.exports = (req, res, next) => {
