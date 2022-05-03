@@ -1,6 +1,7 @@
 const prisma = require("../config/db");
 const bcrypt = require("bcrypt");
-
+const jwt = require("jsonwebtoken");
+const { jwt_key } = require("../env");
 const saltRounds = 10;
 
 module.exports = {
@@ -32,7 +33,9 @@ module.exports = {
             },
           });
 
-          return res.status(201).json(user);
+          const token = jwt.sign({ userID: user.id }, jwt_key);
+
+          return res.status(201).json({ token });
         });
       } else {
         return res.status(500).json({ message: "Email already exist" });
@@ -45,6 +48,12 @@ module.exports = {
   login: async (req, res) => {
     try {
       const { email, password } = req.body;
+
+      if (!email || !password) {
+        return res
+          .status(422)
+          .json({ error: "Must provide email and password" });
+      }
 
       const user = await prisma.users.count({
         where: {
@@ -62,14 +71,15 @@ module.exports = {
         },
       });
 
-      const match = await bcrypt.compare(password, data.password);
-
-      if (match) {
-        console.log("LOGOU");
-        return res.status(200).json(data);
+      if (!data) {
+        return res.status(422).json({ error: "Invalid password or email" });
       }
 
-      return res.status(401).json({ message: "Not authorized" });
+      await bcrypt.compare(password, data.password);
+
+      const token = jwt.sign({ userId: data.id }, jwt_key);
+
+      return res.status(200).json({ token });
     } catch (error) {
       return res.status(500).json(error.message);
     }
