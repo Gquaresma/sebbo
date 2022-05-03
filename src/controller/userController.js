@@ -35,7 +35,15 @@ module.exports = {
 
           const token = jwt.sign({ userID: user.id }, jwt_key);
 
-          return res.status(201).json({ token });
+          return res.status(201).json({
+            token, 
+            user: { 
+              id: data.id,
+              name: data.name,
+              email: data.email,
+              phone: data.phone
+            } 
+          });
         });
       } else {
         return res.status(500).json({ message: "Email already exist" });
@@ -79,9 +87,49 @@ module.exports = {
 
       const token = jwt.sign({ userId: data.id }, jwt_key);
 
-      return res.status(200).json({ token });
+      return res.status(200).json({ 
+        token, 
+        user: { 
+          id: data.id,
+          name: data.name,
+          email: data.email,
+          phone: data.phone
+        } 
+      });
     } catch (error) {
       return res.status(500).json(error.message);
     }
   },
+
+  findOneByJwt: async (req, res) => {
+    try {
+      const { jwtToken } = req.body;
+
+      if (!jwtToken) {
+        return res
+          .status(422)
+          .json({ error: "Must provide a jwt token" });
+      }
+
+      const id = jwt.decode(jwtToken, jwt_key).userId
+      const user = await prisma.users.findUnique({
+        where: {
+          id,
+        },
+      });
+
+      if (!user) {
+        return res.status(422).json({ error: "Invalid token" });
+      }
+
+      return res.status(200).json({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone
+      });
+    } catch (error) {
+      return res.status(500).json(error.message);
+    }
+  }
 };
