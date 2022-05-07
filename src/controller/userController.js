@@ -38,10 +38,10 @@ module.exports = {
           return res.status(201).json({
             token, 
             user: { 
-              id: data.id,
-              name: data.name,
-              email: data.email,
-              phone: data.phone
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              phone: user.phone
             } 
           });
         });
@@ -112,14 +112,19 @@ module.exports = {
       }
 
       const id = jwt.decode(jwtToken, jwt_key).userId
+
+      if (!id) {
+        return res.status(422).json({ error: "Invalid token" });
+      }
+
       const user = await prisma.users.findUnique({
         where: {
           id,
         },
       });
-
+      
       if (!user) {
-        return res.status(422).json({ error: "Invalid token" });
+        return res.status(404).json({ error: "User not found" });
       }
 
       return res.status(200).json({
