@@ -36,13 +36,13 @@ module.exports = {
           const token = jwt.sign({ userID: user.id }, jwt_key);
 
           return res.status(201).json({
-            token, 
-            user: { 
-              id: data.id,
-              name: data.name,
-              email: data.email,
-              phone: data.phone
-            } 
+            token,
+            user: {
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              phone: user.phone,
+            },
           });
         });
       } else {
@@ -87,14 +87,14 @@ module.exports = {
 
       const token = jwt.sign({ userId: data.id }, jwt_key);
 
-      return res.status(200).json({ 
-        token, 
-        user: { 
+      return res.status(200).json({
+        token,
+        user: {
           id: data.id,
           name: data.name,
           email: data.email,
-          phone: data.phone
-        } 
+          phone: data.phone,
+        },
       });
     } catch (error) {
       return res.status(500).json(error.message);
@@ -106,12 +106,10 @@ module.exports = {
       const { jwtToken } = req.body;
 
       if (!jwtToken) {
-        return res
-          .status(422)
-          .json({ error: "Must provide a jwt token" });
+        return res.status(422).json({ error: "Must provide a jwt token" });
       }
 
-      const id = jwt.decode(jwtToken, jwt_key).userId
+      const id = jwt.decode(jwtToken, jwt_key).userId;
       const user = await prisma.users.findUnique({
         where: {
           id,
@@ -126,10 +124,10 @@ module.exports = {
         id: user.id,
         name: user.name,
         email: user.email,
-        phone: user.phone
+        phone: user.phone,
       });
     } catch (error) {
       return res.status(500).json(error.message);
     }
-  }
+  },
 };

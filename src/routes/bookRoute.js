@@ -8,7 +8,7 @@ const router = express.Router();
 router
   .route("/livro")
   .get(bookcontroller.findAll)
-  .post(bookcontroller.createBook, auth);
+  .post(bookcontroller.createBook);
 
 router
   .route("/livro/:id")
