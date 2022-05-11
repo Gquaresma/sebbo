@@ -1,10 +1,10 @@
 -- CreateTable
 CREATE TABLE "Users" (
     "id" TEXT NOT NULL,
-    "nome" VARCHAR(100) NOT NULL,
-    "email" VARCHAR(50) NOT NULL,
-    "telefone" VARCHAR(50) NOT NULL,
-    "senha" VARCHAR(50) NOT NULL,
+    "name" VARCHAR(100) NOT NULL,
+    "email" VARCHAR(100) NOT NULL,
+    "phone" VARCHAR(50) NOT NULL,
+    "password" VARCHAR(500) NOT NULL,
 
     CONSTRAINT "Users_pkey" PRIMARY KEY ("id")
 );
@@ -16,7 +16,6 @@ CREATE TABLE "Books" (
     "price" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "author" TEXT NOT NULL,
     "sinopse" TEXT NOT NULL DEFAULT E'',
-    "quantity" INTEGER NOT NULL DEFAULT 0,
     "stock" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "Books_pkey" PRIMARY KEY ("id")
@@ -42,6 +41,9 @@ CREATE TABLE "Items" (
 
     CONSTRAINT "Items_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Users_email_key" ON "Users"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Items_book_id_key" ON "Items"("book_id");
