@@ -6,11 +6,15 @@ module.exports = {
     try {
       const { userId, bookId } = req.params;
 
+      // console.log("got book", userId, bookId);
+
       const book = await prisma.books.findUnique({
         where: {
           id: bookId,
         },
       });
+
+      // console.log("got book", book);
 
       const cart = await prisma.purchases.create({
         data: {
@@ -31,6 +35,8 @@ module.exports = {
         },
       });
 
+      // console.log("created cart", cart);
+
       const purchase = await prisma.purchases.findUnique({
         where: {
           id: cart.id,
@@ -40,7 +46,7 @@ module.exports = {
         },
       });
 
-      res.status(201).json(purchase);
+      return res.status(201).json(purchase);
     } catch (error) {
       console.log(error.message);
       res.status(500).json({ message: error.message });
@@ -51,15 +57,18 @@ module.exports = {
     try {
       const purchases = await prisma.purchases.findMany({
         where: {
-          status: "pedente"
-        }
+          status: "pedente",
+        },
       });
       const cartPurchase = purchases[0];
 
-      console.log(cartPurchase);
+      console.log("sdtd", cartPurchase);
 
-      if ( !cartPurchase ) {
-        res.status(200).json(cartPurchase);
+      if (!cartPurchase) {
+        // gambi triste
+        await prisma.items.deleteMany({});
+        await prisma.purchases.deleteMany({});
+        return res.status(200).json(cartPurchase);
       }
 
       const purchase = await prisma.purchases.findUnique({
@@ -69,17 +78,22 @@ module.exports = {
         select: {
           id: true,
           created_at: true,
-          status:  true,
-          value:  true,
-          buyer:  true,
+          status: true,
+          value: true,
+          buyer: true,
           items: {
+            orderBy: [
+              {
+                id: 'desc',
+              },
+            ],
             select: {
               id: true,
               quantity: true,
-              book: true
-            }
-          }
-        }
+              book: true,
+            },
+          },
+        },
       });
 
       res.status(200).json(purchase);
@@ -118,15 +132,15 @@ module.exports = {
 
       const findItem = await prisma.items.findUnique({
         where: {
-          book_id: id
-        }
+          book_id: id,
+        },
       });
 
       const previousValue = findItem ? findItem.quantity : 0;
 
       const item = await prisma.items.upsert({
         where: {
-          book_id: id
+          book_id: id,
         },
         update: {
           quantity: previousValue + 1,
@@ -134,7 +148,7 @@ module.exports = {
         create: {
           quantity: 1,
           book_id: id,
-          purchase_id: purchase[0].id
+          purchase_id: purchase[0].id,
         },
       });
 
@@ -172,7 +186,7 @@ module.exports = {
         },
       });
 
-      console.log(item);
+      console.log("fff", item);
 
       const updateQuantity = await prisma.items.update({
         where: { id },
@@ -198,7 +212,7 @@ module.exports = {
       });
 
       let updateQuantity = {};
-      if ( item && item.quantity === 1 ) {
+      if (item && item.quantity === 1) {
         await prisma.items.delete({
           where: {
             id,

@@ -63,16 +63,6 @@ module.exports = {
           .json({ error: "Must provide email and password" });
       }
 
-      const user = await prisma.users.count({
-        where: {
-          email,
-        },
-      });
-
-      if (user === 0) {
-        return res.status(401).json({ message: "Not authorized" });
-      }
-
       const data = await prisma.users.findUnique({
         where: {
           email,
@@ -80,22 +70,25 @@ module.exports = {
       });
 
       if (!data) {
-        return res.status(422).json({ error: "Invalid password or email" });
+        return res.status(404).json({ message: "Not found" });
       }
 
-      await bcrypt.compare(password, data.password);
+      const passwordCorrect = await bcrypt.compare(password, data.password);
 
-      const token = jwt.sign({ userId: data.id }, jwt_key);
+      if ( passwordCorrect ) {
+        const token = jwt.sign({ userId: data.id }, jwt_key);
+        return res.status(200).json({
+          token,
+          user: {
+            id: data.id,
+            name: data.name,
+            email: data.email,
+            phone: data.phone,
+          },
+        });
+      }
 
-      return res.status(200).json({
-        token,
-        user: {
-          id: data.id,
-          name: data.name,
-          email: data.email,
-          phone: data.phone,
-        },
-      });
+      return res.status(422).json({ error: "Email ou senha inválidos" });
     } catch (error) {
       return res.status(500).json(error.message);
     }
