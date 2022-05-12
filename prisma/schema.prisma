@@ -10,7 +10,7 @@ datasource db {
 model Users {
   id        String      @id @default(cuid())
   name      String      @db.VarChar(100)
-  email     String      @db.VarChar(100) @unique
+  email     String      @unique @db.VarChar(100)
   phone     String      @db.VarChar(50)
   password  String      @db.VarChar(500)
   Purchases Purchases[]
@@ -24,7 +24,6 @@ model Books {
   sinopse String @default("")
   stock   Int    @default(0)
   item    Items?
-
 }
 
 model Purchases {

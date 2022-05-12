@@ -84,7 +84,7 @@ module.exports = {
           items: {
             orderBy: [
               {
-                id: 'desc',
+                id: "desc",
               },
             ],
             select: {
@@ -270,6 +270,12 @@ module.exports = {
         },
         data: {
           status: "Confirmada",
+        },
+      });
+
+      await prisma.items.deleteMany({
+        where: {
+          purchase_id: id,
         },
       });
 
