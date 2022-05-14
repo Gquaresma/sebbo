@@ -4,7 +4,7 @@ const auth = require("../auth/auth");
 
 const router = express.Router();
 
-// router.use(auth);
+router.use(auth);
 
 router.route("/user/:userId/:bookId/purchase").post(itemController.createPurchase);
 router.route("/user/:userId/purchase/cart").get(itemController.getCartPurchase);
