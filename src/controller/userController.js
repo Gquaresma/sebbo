@@ -18,7 +18,6 @@ module.exports = {
       console.log(check);
 
       if (check === 0) {
-        console.log("jashdl");
         bcrypt.hash(password, saltRounds, async (err, passwordHash) => {
           if (err) {
             res.status(500).json(error.message);

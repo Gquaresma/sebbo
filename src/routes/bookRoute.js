@@ -13,7 +13,7 @@ router
 router
   .route("/livro/:id")
   .get(bookcontroller.findOne)
-  .put(bookcontroller.updateBook, auth)
-  .delete(bookcontroller.deleteBook, auth);
+  .put(auth, bookcontroller.updateBook)
+  .delete(auth, bookcontroller.deleteBook);
 
 module.exports = router;

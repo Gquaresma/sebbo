@@ -5,6 +5,7 @@ const prisma = require("../config/db");
 module.exports = (req, res, next) => {
   const { authorization } = req.headers;
 
+  // console.log(authorization);
   if (!authorization) {
     return res.status(401).json({
       auth: false,
@@ -22,10 +23,13 @@ module.exports = (req, res, next) => {
       });
     }
 
-    const { userId } = payload;
+    console.log(payload);
+
+    const { userID } = payload;
+
     const user = await prisma.users.findUnique({
-        where: {id: userId}
-    })
+      where: { id: userID },
+    });
 
     req.user = user;
     next();

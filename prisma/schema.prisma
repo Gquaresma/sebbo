@@ -17,13 +17,13 @@ model Users {
 }
 
 model Books {
-  id      String @id @default(cuid())
+  id      String  @id @default(cuid())
   name    String
-  price   Float  @default(0)
+  price   Float   @default(0)
   author  String
-  sinopse String @default("")
-  stock   Int    @default(0)
-  item    Items?
+  sinopse String  @default("")
+  stock   Int     @default(0)
+  item    Items[]
 }
 
 model Purchases {
@@ -40,7 +40,7 @@ model Items {
   id          String    @id @default(cuid())
   quantity    Int       @default(0)
   purchase_id String
-  book_id     String    @unique
+  book_id     String
   purchase    Purchases @relation(fields: [purchase_id], references: [id])
   book        Books     @relation(fields: [book_id], references: [id])
 }
