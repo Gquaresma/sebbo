@@ -1,32 +1,5 @@
 const prisma = require("../config/db");
-
-const getCartPurchaseHelper = async (userId) => {
-  const pendingPurchases = await prisma.purchases.findMany({
-    where: {
-      AND: [
-        {
-          status: "pedente",
-        },
-        {
-          user_id: userId,
-        },
-      ],
-    },
-
-    include: {
-      items: true,
-    },
-  });
-  return pendingPurchases[0];
-};
-
-const getItemByBookId = async (items, bookId) => {
-  for (let el of items) {
-    if (el.book_id === bookId) {
-      return el;
-    }
-  }
-};
+const cartHelper = require("../helpers/cartHelper");
 
 module.exports = {
   createPurchase: async (req, res) => {
@@ -153,18 +126,18 @@ module.exports = {
       const { id } = req.body;
       const { userId } = req.params;
 
-      const cart = await getCartPurchaseHelper(userId);
+      const cart = await cartHelper.getCartPurchaseHelper(userId);
       const items = cart.items;
-      const item = getItemByBookId(items, id);
+      const item = await cartHelper.getItemByBookId(items, id);
 
       const previousValue = item ? item.quantity : 0;
 
       const newItem = await prisma.items.upsert({
         where: {
-          id: item ? item.id : undefined,
+          id: item ? item.id : null,
         },
         update: {
-          quantity: previousValue + 1,
+          quantity: Number.parseInt(previousValue + 1),
         },
         create: {
           quantity: 1,
@@ -185,9 +158,9 @@ module.exports = {
       const { id } = req.body;
       const { userId } = req.params;
 
-      const cart = await getCartPurchaseHelper(userId);
+      const cart = await cartHelper.getCartPurchaseHelper(userId);
       const items = cart.items;
-      const item = getItemByBookId(items, id);
+      const item = await cartHelper.getItemByBookId(items, id);
 
       if (item) {
         await prisma.items.delete({
@@ -198,15 +171,6 @@ module.exports = {
         return res.status(200).json({ message: "Item removido com sucesso" });
       }
 
-      const newItem = await prisma.items.update({
-        where: {
-          id: item ? item.id : undefined,
-        },
-        data: {
-          quantity: previousValue - 1,
-        },
-      });
-
       res.status(404).json({ message: "Item não encontrado" });
     } catch (error) {
       console.log(error.message);
@@ -216,7 +180,7 @@ module.exports = {
 
   addQuantity: async (req, res) => {
     try {
-      const { quantity, id } = req.body;
+      const { id } = req.body;
 
       const item = await prisma.items.findUnique({
         where: {
@@ -227,7 +191,7 @@ module.exports = {
       const updateQuantity = await prisma.items.update({
         where: { id },
         data: {
-          quantity: item.quantity + Number.parseInt(quantity),
+          quantity: item.quantity + 1,
         },
       });
 
@@ -268,7 +232,7 @@ module.exports = {
           id: item.id,
         },
         data: {
-          quantity: previousValue - 1,
+          quantity: previousQuantity - 1,
         },
       });
 

@@ -2,6 +2,8 @@ const prisma = require("../config/db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { jwt_key } = require("../../env");
+const userHelper = require("../helpers/userHelper");
+const { use } = require("express/lib/router");
 const saltRounds = 10;
 
 module.exports = {
@@ -74,7 +76,7 @@ module.exports = {
 
       const passwordCorrect = await bcrypt.compare(password, data.password);
 
-      if ( passwordCorrect ) {
+      if (passwordCorrect) {
         const token = jwt.sign({ userId: data.id }, jwt_key);
         return res.status(200).json({
           token,
@@ -97,25 +99,7 @@ module.exports = {
     try {
       const { jwtToken } = req.body;
 
-      if (!jwtToken) {
-        return res.status(422).json({ error: "Must provide a jwt token" });
-      }
-
-      const id = jwt.decode(jwtToken, jwt_key).userId;
-
-      if (!id) {
-        return res.status(422).json({ error: "Invalid token" });
-      }
-
-      const user = await prisma.users.findUnique({
-        where: {
-          id,
-        },
-      });
-
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
+      const user = await userHelper.getUser(jwtToken, res);
 
       return res.status(200).json({
         id: user.id,
@@ -123,6 +107,47 @@ module.exports = {
         email: user.email,
         phone: user.phone,
       });
+    } catch (error) {
+      return res.status(500).json(error.message);
+    }
+  },
+
+  updateUser: async (req, res) => {
+    try {
+      const { jwtToken, name, email, phone } = req.body;
+
+      const user = await userHelper.getUser(jwtToken, res);
+
+      const update = await prisma.users.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          name: name || user.name,
+          email: email || user.email,
+          phone: phone || user.phone,
+        },
+      });
+
+      return res.status(200).json(update);
+    } catch (error) {
+      return res.status(500).json(error.message);
+    }
+  },
+
+  deleteUser: async (req, res) => {
+    try {
+      const { jwtToken } = req.body;
+
+      const user = await userHelper.getUser(jwtToken, res);
+
+      await prisma.users.delete({
+        where: {
+          id: user.id,
+        },
+      });
+
+      return res.status(200).json({message: "Usuário deletado com sucesso"});
     } catch (error) {
       return res.status(500).json(error.message);
     }
