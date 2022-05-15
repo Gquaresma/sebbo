@@ -14,6 +14,17 @@ module.exports = (req, res, next) => {
   }
 
   const token = authorization.replace("x-access-token ", "");
+  
+  const { userId } = req.params;
+  const authId = jwt.decode(token, jwt_key).userId;
+
+  if ( userId !== authId ) {
+    return res.status(403).json({
+      auth: false,
+      message: "Access denied",
+    });
+  }
+
 
   jwt.verify(token, jwt_key, async (err, payload) => {
     if (err) {
@@ -24,8 +35,6 @@ module.exports = (req, res, next) => {
     }
 
     const { userId } = payload;
-
-    console.log("payload", payload);
 
     const user = await prisma.users.findUnique({
       where: { id: userId },

@@ -6,41 +6,35 @@ module.exports = {
     try {
       const { userId, bookId } = req.params;
 
-      const book = await prisma.books.findUnique({
-        where: {
-          id: bookId,
-        },
-      });
+      // const book = await prisma.books.findUnique({
+      //   where: {
+      //     id: bookId,
+      //   },
+      // });
 
       const cart = await prisma.purchases.create({
         data: {
-          value: book.price,
           buyer: {
             connect: {
               id: userId,
             },
           },
           items: {
-            create: [
-              {
-                quantity: 1,
-                book_id: bookId,
-              },
-            ],
+            create: [],
           },
         },
       });
 
-      const purchase = await prisma.purchases.findUnique({
-        where: {
-          id: cart.id,
-        },
-        include: {
-          items: true,
-        },
-      });
+      // const purchase = await prisma.purchases.findUnique({
+      //   where: {
+      //     id: cart.id,
+      //   },
+      //   include: {
+      //     items: true,
+      //   },
+      // });
 
-      return res.status(201).json(purchase);
+      return res.status(201).json({message: "successfully created"});
     } catch (error) {
       console.log(error.message);
       res.status(500).json({ message: error.message });

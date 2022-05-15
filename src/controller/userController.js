@@ -34,7 +34,7 @@ module.exports = {
             },
           });
 
-          const token = jwt.sign({ userID: user.id }, jwt_key);
+          const token = jwt.sign({ userId: user.id }, jwt_key);
 
           return res.status(201).json({
             token,
@@ -114,13 +114,18 @@ module.exports = {
 
   updateUser: async (req, res) => {
     try {
-      const { jwtToken, name, email, phone } = req.body;
+      const { userId } = req.params;
+      const { name, email, phone } = req.body;
 
-      const user = await userHelper.getUser(jwtToken, res);
-
-      const update = await prisma.users.update({
+      const user = await prisma.users.findUnique({
         where: {
-          id: user.id,
+          id: userId,
+        }
+      });
+
+      const updatedUser = await prisma.users.update({
+        where: {
+          id: userId,
         },
         data: {
           name: name || user.name,
@@ -129,7 +134,7 @@ module.exports = {
         },
       });
 
-      return res.status(200).json(update);
+      return res.status(200).json(updatedUser);
     } catch (error) {
       return res.status(500).json(error.message);
     }
@@ -137,13 +142,11 @@ module.exports = {
 
   deleteUser: async (req, res) => {
     try {
-      const { jwtToken } = req.body;
-
-      const user = await userHelper.getUser(jwtToken, res);
+      const { userId } = req.params;
 
       await prisma.users.delete({
         where: {
-          id: user.id,
+          id: userId,
         },
       });
 

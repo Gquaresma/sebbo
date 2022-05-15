@@ -32,7 +32,7 @@ model Purchases {
   value      Float    @default(0)
   created_at DateTime @default(now())
   user_id    String
-  buyer      Users    @relation(fields: [user_id], references: [id])
+  buyer      Users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
   items      Items[]
 }
 
@@ -41,6 +41,6 @@ model Items {
   quantity    Int       @default(0)
   purchase_id String
   book_id     String
-  purchase    Purchases @relation(fields: [purchase_id], references: [id])
-  book        Books     @relation(fields: [book_id], references: [id])
+  purchase    Purchases @relation(fields: [purchase_id], references: [id], onDelete: Cascade)
+  book        Books     @relation(fields: [book_id], references: [id], onDelete: Cascade)
 }
