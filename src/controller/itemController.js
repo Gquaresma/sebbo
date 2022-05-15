@@ -53,7 +53,7 @@ module.exports = {
 
       console.log(req.user);
 
-      const purchases = await prisma.purchases.findMany({
+      const purchase = await prisma.purchases.findFirst({
         where: {
           AND: [
             {
@@ -86,13 +86,13 @@ module.exports = {
         },
       });
 
-      if (!purchases) {
+      if (!purchase) {
         return res.status(404).json({ message: "Compra não encontrada" });
       }
 
-      console.log("cart --- ", purchases);
+      console.log("cart --- ", purchase);
 
-      return res.status(200).json(purchases);
+      return res.status(200).json(purchase);
     } catch (error) {
       console.log(error.message);
       res.status(500).json({ message: error.message });
@@ -134,7 +134,7 @@ module.exports = {
 
       const newItem = await prisma.items.upsert({
         where: {
-          id: item ? item.id : null,
+          id: item ? item.id : "",
         },
         update: {
           quantity: Number.parseInt(previousValue + 1),

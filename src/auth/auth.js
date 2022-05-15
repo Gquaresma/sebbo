@@ -23,12 +23,10 @@ module.exports = (req, res, next) => {
       });
     }
 
-    console.log(payload);
-
-    const { userID } = payload;
+    const { userId } = payload;
 
     const user = await prisma.users.findUnique({
-      where: { id: userID },
+      where: { id: userId },
     });
 
     req.user = user;

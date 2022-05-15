@@ -9,7 +9,7 @@ module.exports = {
         return res.status(422).json({ error: "Must provide a jwt token" });
       }
 
-      const id = jwt.decode(jwtToken, jwt_key).userID;
+      const id = jwt.decode(jwtToken, jwt_key).userId;
 
       if (!id) {
         return res.status(422).json({ error: "Invalid token" });
