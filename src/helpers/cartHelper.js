@@ -6,7 +6,7 @@ module.exports = {
       where: {
         AND: [
           {
-            status: "pedente",
+            status: "Pendente",
           },
           {
             user_id: userId,
