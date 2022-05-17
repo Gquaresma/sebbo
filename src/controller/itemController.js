@@ -51,7 +51,7 @@ module.exports = {
         where: {
           AND: [
             {
-              status: "pedente",
+              status: "Pendente",
             },
 
             {
