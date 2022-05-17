@@ -9,7 +9,7 @@ module.exports = (req, res, next) => {
   if (!authorization) {
     return res.status(401).json({
       auth: false,
-      message: "You must be loged in",
+      message: "You must be logged in",
     });
   }
 
@@ -19,13 +19,11 @@ module.exports = (req, res, next) => {
     if (err) {
       return res.status(401).json({
         auth: false,
-        message: "You must be loged in",
+        message: "You must be logged in",
       });
     }
 
     const { userId } = payload;
-
-    console.log("payload", payload);
 
     const user = await prisma.users.findUnique({
       where: { id: userId },

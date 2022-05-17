@@ -9,7 +9,7 @@ module.exports = (req, res, next) => {
   if (!authorization) {
     return res.status(401).json({
       auth: false,
-      message: "You must be loged in",
+      message: "You must be logged in",
     });
   }
 
@@ -25,12 +25,11 @@ module.exports = (req, res, next) => {
     });
   }
 
-
   jwt.verify(token, jwt_key, async (err, payload) => {
     if (err) {
       return res.status(401).json({
         auth: false,
-        message: "You must be loged in",
+        message: "You must be logged in",
       });
     }
 

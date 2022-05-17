@@ -95,7 +95,7 @@ module.exports = {
 
   getPurchaseById: async (req, res) => {
     try {
-      const { purchaseId, userId } = req.params;
+      const { purchaseId } = req.params;
 
       const purchase = await prisma.purchases.findUnique({
         where: {
@@ -110,6 +110,51 @@ module.exports = {
         res.status(404).json({ message: "Compra não encontrada" });
       }
       res.status(200).json(purchase);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  },
+
+  getPurchases: async (req, res) => {
+    try {
+      const { userId } = req.params;
+
+      const purchases = await prisma.purchases.findMany({
+        where: {
+          AND: [
+            {
+              user_id: userId
+            },
+            {
+              status: "Confirmada"
+            }
+          ]
+        },
+        select: {
+          id: true,
+          created_at: true,
+          status: true,
+          value: true,
+          buyer: true,
+          items: {
+            orderBy: [
+              {
+                id: "desc",
+              },
+            ],
+            select: {
+              id: true,
+              quantity: true,
+              book: true,
+            },
+          },
+        },
+      });
+
+      // if (!purchases) {
+      //   res.status(404).json({ message: "Compra não encontrada" });
+      // }
+      res.status(200).json(purchases);
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
