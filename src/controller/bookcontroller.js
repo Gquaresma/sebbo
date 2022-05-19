@@ -60,7 +60,7 @@ module.exports = {
 
       console.log(book);
 
-      const putBook = await prisma.post.update({
+      const putBook = await prisma.books.update({
         where: { id },
         data: {
           name: name || book.name,
