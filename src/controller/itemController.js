@@ -6,12 +6,6 @@ module.exports = {
     try {
       const { userId, bookId } = req.params;
 
-      // const book = await prisma.books.findUnique({
-      //   where: {
-      //     id: bookId,
-      //   },
-      // });
-
       const cart = await prisma.purchases.create({
         data: {
           buyer: {
@@ -25,16 +19,7 @@ module.exports = {
         },
       });
 
-      // const purchase = await prisma.purchases.findUnique({
-      //   where: {
-      //     id: cart.id,
-      //   },
-      //   include: {
-      //     items: true,
-      //   },
-      // });
-
-      return res.status(201).json({message: "successfully created"});
+      return res.status(201).json({ message: "successfully created" });
     } catch (error) {
       console.log(error.message);
       res.status(500).json({ message: error.message });
@@ -123,12 +108,12 @@ module.exports = {
         where: {
           AND: [
             {
-              user_id: userId
+              user_id: userId,
             },
             {
-              status: "Confirmada"
-            }
-          ]
+              status: "Confirmada",
+            },
+          ],
         },
         select: {
           id: true,
@@ -151,9 +136,6 @@ module.exports = {
         },
       });
 
-      // if (!purchases) {
-      //   res.status(404).json({ message: "Compra não encontrada" });
-      // }
       res.status(200).json(purchases);
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -166,6 +148,7 @@ module.exports = {
       const { userId } = req.params;
 
       const cart = await cartHelper.getCartPurchaseHelper(userId);
+      console.log(cart);
       const items = cart.items;
       const item = await cartHelper.getItemByBookId(items, id);
 

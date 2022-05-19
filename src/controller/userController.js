@@ -3,7 +3,6 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { jwt_key } = require("../../env");
 const userHelper = require("../helpers/userHelper");
-const { use } = require("express/lib/router");
 const saltRounds = 10;
 
 module.exports = {
@@ -22,7 +21,7 @@ module.exports = {
       if (check === 0) {
         bcrypt.hash(password, saltRounds, async (err, passwordHash) => {
           if (err) {
-            res.status(500).json(error.message);
+            res.status(500).json(err.message);
           }
 
           const user = await prisma.users.create({
