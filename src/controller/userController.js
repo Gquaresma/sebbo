@@ -8,7 +8,7 @@ const saltRounds = 10;
 module.exports = {
   register: async (req, res) => {
     try {
-      const { name, email, phone, password } = req.body;
+      const { name, email, phone, password, role } = req.body;
 
       const check = await prisma.users.count({
         where: {
@@ -29,6 +29,7 @@ module.exports = {
               name,
               email,
               phone,
+              role,
               password: passwordHash,
             },
           });
@@ -42,6 +43,7 @@ module.exports = {
               name: user.name,
               email: user.email,
               phone: user.phone,
+              role: user.role,
             },
           });
         });
@@ -119,7 +121,7 @@ module.exports = {
       const user = await prisma.users.findUnique({
         where: {
           id: userId,
-        }
+        },
       });
 
       const updatedUser = await prisma.users.update({
@@ -149,7 +151,7 @@ module.exports = {
         },
       });
 
-      return res.status(200).json({message: "Usuário deletado com sucesso"});
+      return res.status(200).json({ message: "Usuário deletado com sucesso" });
     } catch (error) {
       return res.status(500).json(error.message);
     }
