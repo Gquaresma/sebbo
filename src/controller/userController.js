@@ -86,6 +86,7 @@ module.exports = {
             name: data.name,
             email: data.email,
             phone: data.phone,
+            role: data.role,
           },
         });
       }
@@ -107,6 +108,7 @@ module.exports = {
         name: user.name,
         email: user.email,
         phone: user.phone,
+        role: user.role,
       });
     } catch (error) {
       return res.status(500).json(error.message);
@@ -132,6 +134,7 @@ module.exports = {
           name: name || user.name,
           email: email || user.email,
           phone: phone || user.phone,
+          role: user.role,
         },
       });
 
