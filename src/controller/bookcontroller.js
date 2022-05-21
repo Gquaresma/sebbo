@@ -73,18 +73,6 @@ export async function updateBook(req, res) {
 
     console.log(putBook);
 
-<<<<<<< HEAD
-      const putBook = await prisma.books.update({
-        where: { id },
-        data: {
-          name: name || book.name,
-          price: Number(price) || book.price,
-          author: author || book.author,
-          sinopse: sinopse || book.sinopse,
-          stock: parseInt(stock) || book.stock,
-        },
-      });
-=======
     res.status(200).json(putBook);
   } catch (error) {
     console.log(error.message);
@@ -94,7 +82,6 @@ export async function updateBook(req, res) {
 export async function deleteBook(req, res) {
   try {
     const id = req.params.id;
->>>>>>> 5dfb77e82d2b8694e88ce17620aba84a08dc61f8
 
     const deleteBook = await prisma.books.delete({
       where: { id },
