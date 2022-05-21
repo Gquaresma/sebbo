@@ -1,15 +1,15 @@
-const express = require("express");
-const cors = require("cors");
+import express, { urlencoded, json } from "express";
+import cors from "cors";
 
-const bookRoute = require("./routes/bookRoute");
-const userRoute = require("./routes/userRoute");
-const purchaseRoute = require("./routes/purchaseRoute");
+import bookRoute from "./routes/bookRoute.js";
+import userRoute from "./routes/userRoute.js";
+import purchaseRoute from "./routes/purchaseRoute.js";
 
 const app = express();
 
 app.use(cors());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(urlencoded({ extended: true }));
+app.use(json());
 
 app.use(bookRoute);
 app.use(userRoute);
