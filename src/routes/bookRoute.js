@@ -16,9 +16,7 @@ router.route("/livro").get(findAll).post(auth, roleAuth, imgUpload, createBook);
 router
   .route("/livro/:id")
   .get(findOne)
-  .put(auth, roleAuth, updateBook)
+  .put(auth, roleAuth, imgUpload, updateBook)
   .delete(auth, roleAuth, deleteBook);
 
 export default router;
-
-

@@ -3,6 +3,7 @@ import {
   ref,
   uploadBytesResumable,
   getDownloadURL,
+  deleteObject,
 } from "firebase/storage";
 
 import "../config/fb.js";
@@ -30,4 +31,16 @@ async function imgUpload(imgFile) {
   }
 }
 
+export async function deleteImg(imgUrl) {
+  try {
+
+    console.log(imgUrl);
+    const storage = getStorage();
+    const desertRef = ref(storage, imgUrl);
+
+    return deleteObject(desertRef);
+  } catch (error) {
+    throw new Error(error.message);
+  }
+}
 export default imgUpload;
