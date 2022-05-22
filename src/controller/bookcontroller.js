@@ -1,96 +1,104 @@
-const prisma = require("../config/db");
+import prisma from "../config/db.js";
 
-module.exports = {
-  createBook: async (req, res) => {
-    try {
-      const { name, price, author, sinopse, stock } = req.body;
+import imgUpload, { deleteImg } from "../helpers/imgHelper.js";
 
-      console.log(parseInt(stock, 10));
+export async function createBook(req, res) {
+  try {
+    const { name, price, author, sinopse, stock } = req.body;
 
-      const postBook = await prisma.books.create({
-        data: {
-          name,
-          price: Number(price),
-          author,
-          sinopse,
-          stock: parseInt(stock, 10),
-        },
-      });
+    const file = req.file;
+    const imgUrl = await imgUpload(file);
 
-      res.status(201).json(postBook);
-    } catch (error) {
-      console.log(error.message);
-      res.status(500).json(error.message);
-    }
-  },
+    const postBook = await prisma.books.create({
+      data: {
+        name,
+        price: Number(price),
+        author,
+        sinopse,
+        stock: parseInt(stock, 10),
+        image: imgUrl,
+      },
+    });
 
-  findAll: async (_, res) => {
-    try {
-      const book = await prisma.books.findMany();
+    res.status(201).json(postBook);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(error.message);
+  }
+}
+export async function findAll(_, res) {
+  try {
+    const book = await prisma.books.findMany();
 
-      res.status(200).json(book);
-    } catch (error) {
-      res.status(500).json(error.message);
-    }
-  },
+    res.status(200).json(book);
+  } catch (error) {
+    res.status(500).json(error.message);
+  }
+}
+export async function findOne(req, res) {
+  try {
+    const id = req.params.id;
+    const book = await prisma.books.findUnique({
+      where: { id },
+    });
 
-  findOne: async (req, res) => {
-    try {
-      const id = req.params.id;
-      const book = await prisma.books.findUnique({
-        where: { id },
-      });
+    res.status(200).json(book);
+  } catch (error) {
+    res.status(500).json(error.message);
+  }
+}
+export async function updateBook(req, res) {
+  try {
+    const { id } = req.params;
+    const { name, price, author, sinopse, stock } = req.body;
 
-      res.status(200).json(book);
-    } catch (error) {
-      res.status(500).json(error.message);
-    }
-  },
+    const file = req.file;
+    const imgUrl = await imgUpload(file);
 
-  updateBook: async (req, res) => {
-    try {
-      const id = req.params.id;
-      const { name, price, author, sinopse, stock } = req.body;
+    const book = await prisma.books.findUnique({
+      where: { id },
+    });
 
-      console.log(name, price, author, sinopse, stock)
+    // console.log(book);
 
-      const book = await prisma.books.findUnique({
-        where: { id },
-      });
+    const putBook = await prisma.books.update({
+      where: { id },
+      data: {
+        name: name || book.name,
+        price: Number(price) || book.price,
+        author: author || book.author,
+        sinopse: sinopse || book.sinopse,
+        stock: parseInt(stock) || book.stock,
+        image: imgUrl || book.image,
+      },
+    });
 
-      console.log(book);
+    if (imgUrl) await deleteImg(book.image);
 
-      const putBook = await prisma.books.update({
-        where: { id },
-        data: {
-          name: name || book.name,
-          price: Number(price) || book.price,
-          author: author || book.author,
-          sinopse: sinopse || book.sinopse,
-          stock: parseInt(stock) || book.stock,
-        },
-      });
+    // console.log(putBook);
 
-      console.log(putBook);
+    res.status(200).json(putBook);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(error.message);
+  }
+}
+export async function deleteBook(req, res) {
+  try {
+    const id = req.params.id;
 
-      res.status(200).json(putBook);
-    } catch (error) {
-      console.log(error.message);
-      res.status(500).json(error.message);
-    }
-  },
+    const book = await prisma.books.findUnique({
+      where: { id },
+    });
 
-  deleteBook: async (req, res) => {
-    try {
-      const id = req.params.id;
+    await deleteImg(book.image);
 
-      const deleteBook = await prisma.books.delete({
-        where: { id },
-      });
-      res.status(200).json(deleteBook);
-    } catch (error) {
-      console.log(error.message);
-      res.status(500).json(error.message);
-    }
-  },
-};
+    const deleteBook = await prisma.books.delete({
+      where: { id },
+    });
+    res.status(200).json(deleteBook);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(error.message);
+  }
+}

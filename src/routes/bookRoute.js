@@ -1,18 +1,22 @@
-const express = require("express");
-const bookcontroller = require("../controller/bookcontroller");
-const auth = require("../auth/auth");
-const roleAuth = require("../auth/roleAuth");
-const router = express.Router();
+import { Router } from "express";
+const router = Router();
+import {
+  findAll,
+  createBook,
+  findOne,
+  updateBook,
+  deleteBook,
+} from "../controller/bookcontroller.js";
+import auth from "../auth/auth.js";
+import roleAuth from "../auth/roleAuth.js";
+import imgUpload from "../Middlewares/imgUpload.js";
 
-router
-  .route("/livro")
-  .get(bookcontroller.findAll)
-  .post(auth, roleAuth, bookcontroller.createBook);
+router.route("/livro").get(findAll).post(auth, roleAuth, imgUpload, createBook);
 
 router
   .route("/livro/:id")
-  .get(bookcontroller.findOne)
-  .put(auth, roleAuth, bookcontroller.updateBook)
-  .delete(auth, roleAuth, bookcontroller.deleteBook);
+  .get(findOne)
+  .put(auth, roleAuth, imgUpload, updateBook)
+  .delete(auth, roleAuth, deleteBook);
 
-module.exports = router;
+export default router;

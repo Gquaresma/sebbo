@@ -1,14 +1,20 @@
-const express = require("express");
-const userController = require("../controller/userController");
-const auth = require("../auth/auth");
-const authorization = require("../auth/authorization");
+import { Router } from "express";
+import {
+  register,
+  login,
+  findOneByJwt,
+  updateUser,
+  deleteUser,
+} from "../controller/userController.js";
+import auth from "../auth/auth.js";
+import authorization from "../auth/authorization.js";
 
-const router = express.Router();
+const router = Router();
 
-router.route("/user/register").post(userController.register);
-router.route("/user/login").post(userController.login);
-router.route("/user/data").post(auth, userController.findOneByJwt);
-router.route("/user/:userId/update").put(authorization, userController.updateUser); //passar o token no body, como em findOneByJwt
-router.route("/user/:userId/delete").delete(authorization, userController.deleteUser); //passar o token no body, como em findOneByJwt
+router.route("/user/register").post(register);
+router.route("/user/login").post(login);
+router.route("/user/data").post(auth, findOneByJwt);
+router.route("/user/:userId/update").put(authorization, updateUser); //passar o token no body, como em findOneByJwt
+router.route("/user/:userId/delete").delete(authorization, deleteUser); //passar o token no body, como em findOneByJwt
 
-module.exports = router;
+export default router;

@@ -1,314 +1,306 @@
-const prisma = require("../config/db");
-const cartHelper = require("../helpers/cartHelper");
+import prisma from "../config/db.js";
+import {
+  getCartPurchaseHelper,
+  getItemByBookId,
+} from "../helpers/cartHelper.js";
 
-module.exports = {
-  createPurchase: async (req, res) => {
-    try {
-      const { userId, bookId } = req.params;
+export async function createPurchase(req, res) {
+  try {
+    const { userId } = req.params;
 
-      const cart = await prisma.purchases.create({
-        data: {
-          buyer: {
-            connect: {
-              id: userId,
-            },
-          },
-          items: {
-            create: [],
+    await prisma.purchases.create({
+      data: {
+        buyer: {
+          connect: {
+            id: userId,
           },
         },
-      });
+        items: {
+          create: [],
+        },
+      },
+    });
 
-      return res.status(201).json({ message: "successfully created" });
-    } catch (error) {
-      console.log(error.message);
-      res.status(500).json({ message: error.message });
-    }
-  },
+    return res.status(201).json({ message: "successfully created" });
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ message: error.message });
+  }
+}
+export async function getCartPurchase(req, res) {
+  try {
+    const { userId } = req.params;
 
-  getCartPurchase: async (req, res) => {
-    try {
-      const { userId } = req.params;
+    console.log(req.user);
 
-      console.log(req.user);
+    const purchase = await prisma.purchases.findFirst({
+      where: {
+        AND: [
+          {
+            status: "Pendente",
+          },
 
-      const purchase = await prisma.purchases.findFirst({
-        where: {
-          AND: [
+          {
+            user_id: userId,
+          },
+        ],
+      },
+      select: {
+        id: true,
+        created_at: true,
+        status: true,
+        value: true,
+        buyer: true,
+        items: {
+          orderBy: [
             {
-              status: "Pendente",
-            },
-
-            {
-              user_id: userId,
+              id: "desc",
             },
           ],
-        },
-        select: {
-          id: true,
-          created_at: true,
-          status: true,
-          value: true,
-          buyer: true,
-          items: {
-            orderBy: [
-              {
-                id: "desc",
-              },
-            ],
-            select: {
-              id: true,
-              quantity: true,
-              book: true,
-            },
+          select: {
+            id: true,
+            quantity: true,
+            book: true,
           },
         },
-      });
+      },
+    });
 
-      if (!purchase) {
-        return res.status(404).json({ message: "Compra não encontrada" });
-      }
-
-      console.log("cart --- ", purchase);
-
-      return res.status(200).json(purchase);
-    } catch (error) {
-      console.log(error.message);
-      res.status(500).json({ message: error.message });
+    if (!purchase) {
+      return res.status(404).json({ message: "Compra não encontrada" });
     }
-  },
 
-  getPurchaseById: async (req, res) => {
-    try {
-      const { purchaseId } = req.params;
+    console.log("cart --- ", purchase);
 
-      const purchase = await prisma.purchases.findUnique({
-        where: {
-          id: purchaseId,
-        },
-        include: {
-          items: true,
-        },
-      });
+    return res.status(200).json(purchase);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ message: error.message });
+  }
+}
+export async function getPurchaseById(req, res) {
+  try {
+    const { purchaseId } = req.params;
 
-      if (!purchase) {
-        res.status(404).json({ message: "Compra não encontrada" });
-      }
-      res.status(200).json(purchase);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
+    const purchase = await prisma.purchases.findUnique({
+      where: {
+        id: purchaseId,
+      },
+      include: {
+        items: true,
+      },
+    });
+
+    if (!purchase) {
+      res.status(404).json({ message: "Compra não encontrada" });
     }
-  },
+    res.status(200).json(purchase);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+export async function getPurchases(req, res) {
+  try {
+    const { userId } = req.params;
 
-  getPurchases: async (req, res) => {
-    try {
-      const { userId } = req.params;
-
-      const purchases = await prisma.purchases.findMany({
-        where: {
-          AND: [
+    const purchases = await prisma.purchases.findMany({
+      where: {
+        AND: [
+          {
+            user_id: userId,
+          },
+          {
+            status: "Confirmada",
+          },
+        ],
+      },
+      select: {
+        id: true,
+        created_at: true,
+        status: true,
+        value: true,
+        buyer: true,
+        items: {
+          orderBy: [
             {
-              user_id: userId,
-            },
-            {
-              status: "Confirmada",
+              id: "desc",
             },
           ],
-        },
-        select: {
-          id: true,
-          created_at: true,
-          status: true,
-          value: true,
-          buyer: true,
-          items: {
-            orderBy: [
-              {
-                id: "desc",
-              },
-            ],
-            select: {
-              id: true,
-              quantity: true,
-              book: true,
-            },
+          select: {
+            id: true,
+            quantity: true,
+            book: true,
           },
         },
-      });
+      },
+    });
 
-      res.status(200).json(purchases);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  },
+    res.status(200).json(purchases);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+export async function addItem(req, res) {
+  try {
+    const { id } = req.body;
+    const { userId } = req.params;
 
-  addItem: async (req, res) => {
-    try {
-      const { id } = req.body;
-      const { userId } = req.params;
+    const cart = await getCartPurchaseHelper(userId);
+    console.log(cart);
+    const items = cart.items;
+    const item = await getItemByBookId(items, id);
 
-      const cart = await cartHelper.getCartPurchaseHelper(userId);
-      console.log(cart);
-      const items = cart.items;
-      const item = await cartHelper.getItemByBookId(items, id);
+    const previousValue = item ? item.quantity : 0;
 
-      const previousValue = item ? item.quantity : 0;
+    const newItem = await prisma.items.upsert({
+      where: {
+        id: item ? item.id : "",
+      },
+      update: {
+        quantity: Number.parseInt(previousValue + 1),
+      },
+      create: {
+        quantity: 1,
+        book_id: id,
+        purchase_id: cart.id,
+      },
+    });
 
-      const newItem = await prisma.items.upsert({
-        where: {
-          id: item ? item.id : "",
-        },
-        update: {
-          quantity: Number.parseInt(previousValue + 1),
-        },
-        create: {
-          quantity: 1,
-          book_id: id,
-          purchase_id: cart.id,
-        },
-      });
+    res.status(200).json(newItem);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ message: error.message });
+  }
+}
+export async function removerItem(req, res) {
+  try {
+    const { id } = req.body;
+    const { userId } = req.params;
 
-      res.status(200).json(newItem);
-    } catch (error) {
-      console.log(error.message);
-      res.status(500).json({ message: error.message });
-    }
-  },
+    const cart = await getCartPurchaseHelper(userId);
+    const items = cart.items;
+    const item = await getItemByBookId(items, id);
 
-  removerItem: async (req, res) => {
-    try {
-      const { id } = req.body;
-      const { userId } = req.params;
-
-      const cart = await cartHelper.getCartPurchaseHelper(userId);
-      const items = cart.items;
-      const item = await cartHelper.getItemByBookId(items, id);
-
-      if (item) {
-        await prisma.items.delete({
-          where: {
-            id: item.id,
-          },
-        });
-        return res.status(200).json({ message: "Item removido com sucesso" });
-      }
-
-      res.status(404).json({ message: "Item não encontrado" });
-    } catch (error) {
-      console.log(error.message);
-      res.status(500).json({ message: error.message });
-    }
-  },
-
-  addQuantity: async (req, res) => {
-    try {
-      const { id } = req.body;
-
-      const item = await prisma.items.findUnique({
-        where: {
-          id,
-        },
-      });
-
-      const updateQuantity = await prisma.items.update({
-        where: { id },
-        data: {
-          quantity: item.quantity + 1,
-        },
-      });
-
-      res.status(200).json(updateQuantity);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  },
-
-  removeQuantity: async (req, res) => {
-    try {
-      const { id } = req.body;
-      // const { userId } = req.params;
-
-      const item = await prisma.items.findUnique({
-        where: {
-          id,
-        },
-      });
-
-      const previousQuantity = item ? item.quantity : 0;
-
-      if (!item) {
-        return res.status(404).json({ message: "Item não encontrado" });
-      }
-
-      if (previousQuantity <= 1) {
-        await prisma.items.delete({
-          where: {
-            id: item.id,
-          },
-        });
-        return res.status(200).json({ message: "Item removido com sucesso" });
-      }
-
-      await prisma.items.update({
+    if (item) {
+      await prisma.items.delete({
         where: {
           id: item.id,
         },
-        data: {
-          quantity: previousQuantity - 1,
-        },
       });
-
-      res.status(200).json({ message: "Quantidade atualizada com sucesso" });
-    } catch (error) {
-      res.status(500).json({ message: error.message });
+      return res.status(200).json({ message: "Item removido com sucesso" });
     }
-  },
 
-  confirmPurchase: async (req, res) => {
-    try {
-      const { userId } = req.params;
-      const { id } = req.body;
+    res.status(404).json({ message: "Item não encontrado" });
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ message: error.message });
+  }
+}
+export async function addQuantity(req, res) {
+  try {
+    const { id } = req.body;
 
-      const purchase = await prisma.purchases.findUnique({
-        where: {
-          id,
-        },
-        include: {
-          items: true,
-        },
-      });
+    const item = await prisma.items.findUnique({
+      where: {
+        id,
+      },
+    });
 
-      purchase.items.forEach(async (el) => {
-        const book = await prisma.books.findUnique({
-          where: {
-            id: el.book_id,
-          },
-        });
+    const updateQuantity = await prisma.items.update({
+      where: { id },
+      data: {
+        quantity: item.quantity + 1,
+      },
+    });
 
-        await prisma.books.update({
-          where: {
-            id: el.book_id,
-          },
+    res.status(200).json(updateQuantity);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+export async function removeQuantity(req, res) {
+  try {
+    const { id } = req.body;
+    // const { userId } = req.params;
+    const item = await prisma.items.findUnique({
+      where: {
+        id,
+      },
+    });
 
-          data: {
-            stock: book.stock - el.quantity,
-          },
-        });
-      });
+    const previousQuantity = item ? item.quantity : 0;
 
-      await prisma.purchases.update({
-        where: {
-          id,
-        },
-        data: {
-          status: "Confirmada",
-        },
-      });
-
-      res.status(200).json({ message: "Compra efetuada" });
-    } catch (error) {
-      console.log(error.message);
-      res.status(500).json({ message: error.message });
+    if (!item) {
+      return res.status(404).json({ message: "Item não encontrado" });
     }
-  },
-};
+
+    if (previousQuantity <= 1) {
+      await prisma.items.delete({
+        where: {
+          id: item.id,
+        },
+      });
+      return res.status(200).json({ message: "Item removido com sucesso" });
+    }
+
+    await prisma.items.update({
+      where: {
+        id: item.id,
+      },
+      data: {
+        quantity: previousQuantity - 1,
+      },
+    });
+
+    res.status(200).json({ message: "Quantidade atualizada com sucesso" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+export async function confirmPurchase(req, res) {
+  try {
+    const { userId } = req.params;
+    const { id } = req.body;
+
+    const purchase = await prisma.purchases.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        items: true,
+      },
+    });
+
+    purchase.items.forEach(async (el) => {
+      const book = await prisma.books.findUnique({
+        where: {
+          id: el.book_id,
+        },
+      });
+
+      await prisma.books.update({
+        where: {
+          id: el.book_id,
+        },
+
+        data: {
+          stock: book.stock - el.quantity,
+        },
+      });
+    });
+
+    await prisma.purchases.update({
+      where: {
+        id,
+      },
+      data: {
+        status: "Confirmada",
+      },
+    });
+
+    res.status(200).json({ message: "Compra efetuada" });
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ message: error.message });
+  }
+}

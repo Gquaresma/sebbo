@@ -20,6 +20,7 @@ model Users {
 model Books {
   id      String  @id @default(cuid())
   name    String
+  image   String  @default("")
   price   Float   @default(0)
   author  String
   sinopse String  @default("")
