@@ -31,7 +31,7 @@ async function imgUpload(imgFile) {
   }
 }
 
-export async function deleteImg(imgUrl) {
+async function deleteImg(imgUrl) {
   try {
 
     console.log(imgUrl);
@@ -43,4 +43,4 @@ export async function deleteImg(imgUrl) {
     throw new Error(error.message);
   }
 }
-export default imgUpload;
+export {deleteImg, imgUpload}

@@ -272,6 +272,14 @@ export async function confirmPurchase(req, res) {
     });
 
     purchase.items.forEach(async (el) => {
+      if (el.quantity > book.stock) {
+        return res
+          .status(409)
+          .json({
+            error:
+              "Quantidade de itens do pedido é maior que a quantidade em estoque!",
+          });
+      }
       const book = await prisma.books.findUnique({
         where: {
           id: el.book_id,
