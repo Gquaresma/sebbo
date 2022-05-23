@@ -1,6 +1,6 @@
 import prisma from "../config/db.js";
 
-import imgUpload, { deleteImg } from "../helpers/imgHelper.js";
+import { imgUpload, deleteImg } from "../helpers/imgHelper.js";
 
 export async function createBook(req, res) {
   try {

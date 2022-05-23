@@ -145,12 +145,25 @@ export async function addItem(req, res) {
     const { id } = req.body;
     const { userId } = req.params;
 
+    console.log("id: ", id);
+
     const cart = await getCartPurchaseHelper(userId);
-    console.log(cart);
+    // console.log(cart);
     const items = cart.items;
     const item = await getItemByBookId(items, id);
 
     const previousValue = item ? item.quantity : 0;
+
+    const actualQuantity = previousValue + 1;
+
+    if (item && actualQuantity > item.book.stock) {
+      console.log("entrei");
+      return res.status(409).json({
+        message: `Quantidade de itens superior ao estoque de ${item.book.name}`,
+      });
+    }
+
+    console.log("item: ", item);
 
     const newItem = await prisma.items.upsert({
       where: {
@@ -204,7 +217,20 @@ export async function addQuantity(req, res) {
       where: {
         id,
       },
+
+      include: {
+        book: true,
+      },
     });
+
+    const actualQuantity = item.quantity + 1;
+
+    if (actualQuantity > item.book.stock) {
+      console.log("entrei");
+      return res.status(409).json({
+        message: `Quantidade de itens superior ao estoque de ${item.book.name}`,
+      });
+    }
 
     const updateQuantity = await prisma.items.update({
       where: { id },
@@ -298,9 +324,9 @@ export async function confirmPurchase(req, res) {
       },
     });
 
-    res.status(200).json({ message: "Compra efetuada" });
+    return res.status(200).json({ message: "Compra efetuada" });
   } catch (error) {
     console.log(error.message);
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 }
